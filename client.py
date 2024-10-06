@@ -1,41 +1,50 @@
 import socket
 import cv2
-import numpy as np
+import pickle
+import struct
 
-# Client setup
-# HOST = 'your-windows-ip'  # Replace with your actual Windows IP
-HOST = '192.168.143.200'  # Replace with your actual Windows IP
-PORT = 9999
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect((HOST, PORT))
+def client_screen_mirror(host, port=9999):
+    # Create a socket object
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect((host, port))
 
-try:
+    data = b""
+    payload_size = struct.calcsize("Q")  # Define the size of the packed message length
+
     while True:
-        # Receive the length of the image
-        img_size = int.from_bytes(client_socket.recv(4), 'big')
-
-        # Receive the image data
-        img_data = b""
-        while len(img_data) < img_size:
-            packet = client_socket.recv(4096)
-            if not packet:
-                print("Connection closed by the server.")
+        # Retrieve message size
+        while len(data) < payload_size:
+            packet = client_socket.recv(4*1024)  # Receive 4KB chunks
+            if not packet: 
                 break
-            img_data += packet
+            data += packet
+        
+        packed_msg_size = data[:payload_size]
+        data = data[payload_size:]
 
-        if not img_data:
-            break  # Exit if no data received
+        msg_size = struct.unpack("Q", packed_msg_size)[0]
 
-        # Convert the received bytes into an image
-        img_array = np.asarray(bytearray(img_data), dtype=np.uint8)
-        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+        # Retrieve all data based on message size
+        while len(data) < msg_size:
+            data += client_socket.recv(4*1024)
 
-        # Display the image using OpenCV
-        cv2.imshow('Screen Mirror', img)
+        frame_data = data[:msg_size]
+        data = data[msg_size:]
 
+        # Deserialize the image data
+        frame = pickle.loads(frame_data)
+
+        # Display the image in a window
+        cv2.imshow("Mirrored Screen (1280x720)", frame)
+
+        # Exit if the user presses the 'q' key
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-finally:
+    # Clean up
     client_socket.close()
     cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    # Replace 'SERVER_IP' with the IP address of the server machine
+    client_screen_mirror(host='192.168.4.62', port=9999)
